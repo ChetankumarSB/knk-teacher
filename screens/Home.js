@@ -38,6 +38,13 @@ function ProfileScreen() {
 
   );
 }
+function ManageScreen() {
+  return (
+
+   <Manage/>
+
+  );
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -46,7 +53,7 @@ export default function App() {
     <NavigationContainer>
       <Tab.Navigator
 
-        initialRouteName="Timetable"
+        initialRouteName="Manage"
        
         screenOptions={({ route }) => ({
         
@@ -92,6 +99,15 @@ export default function App() {
                 />
               );
             }
+            else if (route.name === 'Manage') {
+              return (
+                <Icon
+                  name={focused ? 'book' : 'book'}
+                  size={size}
+                  color={color}
+                />
+              );
+            }
           },
           tabBarInactiveTintColor: 'gray',
           tabBarActiveTintColor: 'tomato',
@@ -109,6 +125,7 @@ export default function App() {
         <Tab.Screen name="Attendence" options={{headerShown: false}} component={AttendenceScreen} />
         <Tab.Screen name="Timetable" options={{headerShown: false}} component={TimetableScreen} />
         <Tab.Screen name="Profile" options={{headerShown: false}} component={ProfileScreen} />
+        <Tab.Screen name="Manage" options={{headerShown: false}} component={ManageScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
