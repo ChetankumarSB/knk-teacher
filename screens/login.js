@@ -123,7 +123,7 @@ export default function App() {
 
     <ScrollView>
     <View style={styles.container}>
-      <Image source={require('./images/knklogo.jpg')}
+      <Image source={require('./src/KLE-IT-logo.png')}
     style={ styles.logo }
        />
       <View style={styles.formContainer}>
