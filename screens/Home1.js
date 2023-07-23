@@ -29,7 +29,7 @@ const Home = ({ title, author, date, image }) => {
   const receiveData = async () => {
     try {
       // Fetch data from the server and update the state
-      const response = await axios.get('http://  172.20.10.9:8001/teacher/imageupload/read');
+      const response = await axios.get('http://172.20.10.9:8001/teacher/imageupload/read');
       const getImages = response.data || [];
 
       if (getImages.length > 0) {
@@ -70,7 +70,7 @@ const Home = ({ title, author, date, image }) => {
     };
 
     try {
-      const response = await axios.post('http://  172.20.10.9:8001/teacher/imageupload/post', imageObj);
+      const response = await axios.post('http://172.20.10.9:8001/teacher/imageupload/post', imageObj);
       console.log('Image uploaded');
       receiveData(); // Fetch updated data after upload
     } catch (error) {
@@ -81,7 +81,7 @@ const Home = ({ title, author, date, image }) => {
   const deleteImage = async (id) => {
     try {
       // Delete the image from the server
-      await axios.delete(`http://  172.20.10.9:8001/teacher/imageupload/${id}`);
+      await axios.delete(`http://172.20.10.9:8001/teacher/imageupload/${id}`);
       console.log('Image deleted');
       receiveData(); // Fetch updated data after deletion
     } catch (error) {

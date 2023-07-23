@@ -7,7 +7,7 @@ import Home from './screens/Home1';
 import Attendence from './screens/Attendence';
 import Timetable from './screens/Timetable';
 import Profile from './screens/Profile';
-
+import Manage from './screens/Manage'
 function HomeScreen() {
   return (
    
@@ -41,7 +41,7 @@ function ProfileScreen() {
 function ManageScreen() {
   return (
 
-   <Manage/>
+  <Manage/>
 
   );
 }
@@ -124,8 +124,8 @@ export default function App() {
         />
         <Tab.Screen name="Attendence" options={{headerShown: false}} component={AttendenceScreen} />
         <Tab.Screen name="Timetable" options={{headerShown: false}} component={TimetableScreen} />
-        <Tab.Screen name="Profile" options={{headerShown: false}} component={ProfileScreen} />
         <Tab.Screen name="Manage" options={{headerShown: false}} component={ManageScreen} />
+        <Tab.Screen name="Profile" options={{headerShown: false}} component={ProfileScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );

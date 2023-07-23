@@ -19,7 +19,7 @@ const DropdownComponent = () => {
 
   const fetchTimetableData = async () => {
     try {
-      const response = await axios.get('http://  172.20.10.9:8001/teacher/timetable/read');
+      const response = await axios.get('http://172.20.10.9:8001/teacher/timetable/post');
       setTimetableData(response.data);
       setDataLoaded(true);
     } catch (error) {
@@ -37,7 +37,7 @@ const DropdownComponent = () => {
     };
 
     try {
-      const response = await axios.post('http://  172.20.10.9:8001/teacher/timetable/post', timetableData);
+      const response = await axios.post('http://172.20.10.9:8001/teacher/timetable/post', timetableData);
       console.log('Timetable updated');
     } catch (error) {
       console.error(error);
