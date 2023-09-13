@@ -7,13 +7,13 @@ import Home from './screens/Home1';
 import Attendence from './screens/Attendence';
 import Timetable from './screens/Timetable';
 import Profile from './screens/Profile';
-import Manage from './screens/Manage'
-import Login from './login'
+import Manage from './screens/Manage';
+import Marks from './screens/Visualize';
 
-function LoginScreen() {
+function VisualizeScreen() {
   return (
    
-    <Login/>
+    <Marks/>
 
   );
 }
@@ -62,7 +62,7 @@ export default function App() {
     <NavigationContainer>
       <Tab.Navigator
 
-        initialRouteName="Manage"
+        initialRouteName="Home"
        
         screenOptions={({ route }) => ({
         
@@ -117,7 +117,7 @@ export default function App() {
                 />
               );
             }
-            else if (route.name === 'Login') {
+            else if (route.name === 'Visualize') {
               return (
                 <Icon
                   name={focused ? 'user' : 'user'}
@@ -140,7 +140,7 @@ export default function App() {
           options={{headerShown: false,}}
           // options={{ tabBarBadge: 3 }}
         />
-        <Tab.Screen name="Login" options={{headerShown: false}} component={LoginScreen} />
+        <Tab.Screen name="Visualize" options={{headerShown: false}} component={VisualizeScreen} />
         <Tab.Screen name="Attendence" options={{headerShown: false}} component={AttendenceScreen} />
         <Tab.Screen name="Timetable" options={{headerShown: false}} component={TimetableScreen} />
         <Tab.Screen name="Manage" options={{headerShown: false}} component={ManageScreen} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Button } from 'react-native-paper';
+import { Button, Snackbar } from 'react-native-paper';
 import axios from 'axios';
 
 const DropdownComponent = () => {
@@ -12,6 +12,7 @@ const DropdownComponent = () => {
   const [totime, setToTime] = useState(null);
   const [timetableData, setTimetableData] = useState([]);
   const [isDataLoaded, setDataLoaded] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
 
   useEffect(() => {
     fetchTimetableData();
@@ -19,7 +20,7 @@ const DropdownComponent = () => {
 
   const fetchTimetableData = async () => {
     try {
-      const response = await axios.get('http://172.20.10.9:8001/teacher/timetable/post');
+      const response = await axios.get('http://172.20.10.9:8001/teacher/timetable/read');
       setTimetableData(response.data);
       setDataLoaded(true);
     } catch (error) {
@@ -37,8 +38,9 @@ const DropdownComponent = () => {
     };
 
     try {
-      const response = await axios.post('http://172.20.10.9:8001/teacher/timetable/post', timetableData);
+      await axios.post('http://172.20.10.9:8001/teacher/timetable/post', timetableData);
       console.log('Timetable updated');
+      setSnackbarVisible(true);
     } catch (error) {
       console.error(error);
     }
@@ -111,7 +113,9 @@ const DropdownComponent = () => {
       return null;
     }
 
-    const filteredData = timetableData.filter(item => item.classname === selectedClass && item.week === selectedWeek);
+    const filteredData = timetableData.filter(
+      item => item.classname === selectedClass && item.week === selectedWeek
+    );
 
     return (
       <View style={styles.cardContainer}>
@@ -128,107 +132,117 @@ const DropdownComponent = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={classdata}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="classname"
-          placeholder="Select class"
-          searchPlaceholder="Search..."
-          value={selectedClass}
-          onChange={handleClassChange}
-          renderItem={renderItem}
-        />
-
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={subjectdata}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="subject"
-          placeholder="Select subject"
-          searchPlaceholder="Search..."
-          value={subject}
-          onChange={item => setSubject(item.subject)}
-          renderItem={renderItem}
-        />
-
-        <Dropdown
-          style={styles.dropdown}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={weekdata}
-          search
-          maxHeight={300}
-          labelField="label"
-          valueField="week"
-          placeholder="Select weekday"
-          searchPlaceholder="Search..."
-          value={selectedWeek}
-          onChange={handleWeekChange}
-          renderItem={renderItem}
-        />
-
-        <View style={styles.timeContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <View style={styles.card}>
           <Dropdown
-            style={styles.timeDropdown}
+            style={styles.dropdown}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
             inputSearchStyle={styles.inputSearchStyle}
             iconStyle={styles.iconStyle}
-            data={timedata}
+            data={classdata}
             search
             maxHeight={300}
             labelField="label"
-            valueField="time"
-            placeholder="From"
+            valueField="classname"
+            placeholder="Select class"
             searchPlaceholder="Search..."
-            value={fromtime}
-            onChange={item => setFromTime(item.time)}
+            value={selectedClass}
+            onChange={handleClassChange}
             renderItem={renderItem}
           />
 
           <Dropdown
-            style={styles.timeDropdown}
+            style={styles.dropdown}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
             inputSearchStyle={styles.inputSearchStyle}
             iconStyle={styles.iconStyle}
-            data={timedata}
+            data={subjectdata}
             search
             maxHeight={300}
             labelField="label"
-            valueField="time"
-            placeholder="Till"
+            valueField="subject"
+            placeholder="Select subject"
             searchPlaceholder="Search..."
-            value={totime}
-            onChange={item => setToTime(item.time)}
+            value={subject}
+            onChange={item => setSubject(item.subject)}
             renderItem={renderItem}
           />
+
+          <Dropdown
+            style={styles.dropdown}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            iconStyle={styles.iconStyle}
+            data={weekdata}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="week"
+            placeholder="Select weekday"
+            searchPlaceholder="Search..."
+            value={selectedWeek}
+            onChange={handleWeekChange}
+            renderItem={renderItem}
+          />
+
+          <View style={styles.timeContainer}>
+            <Dropdown
+              style={styles.timeDropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={timedata}
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="time"
+              placeholder="From"
+              searchPlaceholder="Search..."
+              value={fromtime}
+              onChange={item => setFromTime(item.time)}
+              renderItem={renderItem}
+            />
+
+            <Dropdown
+              style={styles.timeDropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={timedata}
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="time"
+              placeholder="Till"
+              searchPlaceholder="Search..."
+              value={totime}
+              onChange={item => setToTime(item.time)}
+              renderItem={renderItem}
+            />
+          </View>
+          <Button mode="contained" color="#FF0000" onPress={submitTimetable}>
+            Submit
+          </Button>
         </View>
-        <Button mode="contained" color="#FF0000" onPress={submitTimetable}>
-          Submit
-        </Button>
+
+        {renderHeader()}
+        {renderCard()}
       </View>
 
-      {renderHeader()}
-      {renderCard()}
-    </View>
+      <Snackbar
+        visible={snackbarVisible}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+      >
+        Timetable updated successfully!
+      </Snackbar>
+    </ScrollView>
   );
 };
 
@@ -290,6 +304,11 @@ const timedata = [
 ];
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
     padding: 16,

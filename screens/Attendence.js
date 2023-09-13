@@ -1,181 +1,298 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, FlatList, Switch, TouchableOpacity } from 'react-native';
-import { Button, Card, ListItem } from 'react-native-elements';
+import { StyleSheet, View, Text, Switch, ScrollView, TouchableOpacity } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
+import { Button, Card, Snackbar } from 'react-native-paper';
 import axios from 'axios';
 
-const YourComponent = () => {
-  const classdata = [
-    { label: 'Class 1', CLASS_NUMBER: 'Class 1' },
-    { label: 'Class 2', CLASS_NUMBER: 'Class 2' },
-    { label: 'Class 3', CLASS_NUMBER: 'Class 3' },
-    { label: 'Class 4', CLASS_NUMBER: 'Class 4' },
-  ];
+const data = [
+  { label: 'Class 5', value: 'Class 5' },
+  { label: 'Class 6', value: 'Class 6' },
+  { label: 'Class 7', value: 'Class 7' },
+  { label: 'Class 8', value: 'Class 8' },
+  { label: 'Class 9', value: 'Class 9' },
+  { label: 'Class 10', value: 'Class 10' },
+];
 
-  const [classData, setClassData] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [statusData, setStatusData] = useState([]);
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [absentStudents, setAbsentStudents] = useState([]);
+const DropdownComponent = () => {
+  const [value, setValue] = useState(null);
+  const [studentNames, setStudentNames] = useState([]);
+  const [switchStates, setSwitchStates] = useState({});
+  const [isAttendanceUpdated, setIsAttendanceUpdated] = useState(false);
+  const [isClassSelected, setIsClassSelected] = useState(false);
+  const [selectedAbsentees, setSelectedAbsentees] = useState([]);
+  const [isSnackbarVisible, setIsSnackbarVisible] = useState(false);
 
   useEffect(() => {
-    fetchClassData();
-  }, []);
-
-  const fetchClassData = async () => {
-    try {
-      const response = await axios.get('http://172.20.10.9:8001/teacher/classdata/read');
-      setClassData(response.data);
-      setStatusData(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const handleToggle = (CLASS_NUMBER, ADMISSION_NUMBER, Student_Name, present) => {
-    const updatedData = classData.map((data) => {
-      if (data.CLASS_NUMBER === CLASS_NUMBER && data.ADMISSION_NUMBER === ADMISSION_NUMBER) {
-        return { ...data, present };
-      }
-      return data;
+    // Set all switches to "on" initially
+    const initialSwitchStates = {};
+    studentNames.forEach((name) => {
+      initialSwitchStates[name] = true;
     });
-    setStatusData(updatedData);
+    setSwitchStates(initialSwitchStates);
+  }, [studentNames]);
+
+  // Function to toggle the switch state
+  const toggleSwitch = (name) => {
+    setSwitchStates((prevStates) => ({
+      ...prevStates,
+      [name]: !prevStates[name],
+    }));
   };
 
-  const handleTogglePress = (CLASS_NUMBER, ADMISSION_NUMBER, Student_Name) => {
-    handleToggle(CLASS_NUMBER, ADMISSION_NUMBER, Student_Name, true);
-  };
+  // Function to select the class and fetch student data
+  const selectClass = () => {
+    console.log(value);
 
-  const handleToggleLongPress = (CLASS_NUMBER, ADMISSION_NUMBER) => {
-    handleToggle(CLASS_NUMBER, ADMISSION_NUMBER, false);
-  };
-vs
-
-  const handleClassSelect = (CLASS_NUMBER) => {
-    setSelectedClass(CLASS_NUMBER);
-    setModalVisible(false);
-  };
-
-  const handleSubmission = async () => {
-    const selectedStudentData = classData.find((data) => data.CLASS_NUMBER === selectedClass);
-    setSelectedStudent(selectedStudentData);
-    setAbsentStudents(
-      statusData.filter((data) => data.CLASS_NUMBER === selectedClass && !data.present)
-    );
-
-    // Send attendance data to the server
-    try {
-      await axios.post('http://172.20.10.9:8001/teacher/attendance/update', {
-        date: new Date().toISOString(),
-        class: selectedClass,
-        attendance: statusData.filter((data) => data.CLASS_NUMBER === selectedClass),
+    axios
+      .get('http://172.20.10.9:8001/teacher/classdata/classnumber/read', {
+        params: {
+          classNumber: value,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then((response) => {
+        console.log(response.data);
+        setStudentNames(response.data);
+        setIsClassSelected(true); // Mark class as selected
+        setIsAttendanceUpdated(false); // Reset attendance update status
+        setSelectedAbsentees([]); // Clear selected absentees
+        console.log('Data received from MongoDB successfully');
+      })
+      .catch((error) => {
+        console.error('Error receiving data from MongoDB:', error);
       });
-    } catch (error) {
-      console.error('Error updating attendance:', error);
-    }
   };
 
-  const renderDropdownItem = ({ item }) => (
-    <ListItem
-      key={item.CLASS_NUMBER}
-      title={item.label}
-      onPress={() => handleClassSelect(item.CLASS_NUMBER)}
-      bottomDivider
-      chevron
-    />
-  );
+  // Function to handle the "Update Attendance" button click
+  const handleButtonClick = () => {
+    const switchOffNames = Object.keys(switchStates).filter((name) => !switchStates[name]);
+    setSelectedAbsentees(switchOffNames); // Set the selected absentees to display in the card
+    setIsAttendanceUpdated(true); // Mark attendance as updated
+  };
 
-  const toggleSwitch = () => {
-    setIsEnabled((previousState) => !previousState);
+  // Function to handle back button click on the card
+  const handleBackClick = () => {
+    setIsAttendanceUpdated(false);
+    setSelectedAbsentees([]); // Clear selected absentees
+  };
+
+  // Function to handle submit button click on the card
+  const handleSubmitClick = () => {
+    // Send data to the server
+    const currentDate = new Date().toISOString().split('T')[0]; // Get the current date in ISO format "YYYY-MM-DD"
+
+    // Convert the date to "DD-MM-YYYY" format
+    const [year, month, day] = currentDate.split('-');
+    const formattedDate = `${day}-${month}-${year}`;
+
+    console.log('Absent Names:', selectedAbsentees);
+
+    axios
+      .post('http://172.20.10.9:8001/teacher/attendanceupdate/post', {
+        date: formattedDate, // Use the formatted date
+        absentNames: selectedAbsentees,
+        class: value, // Set the "class" field with the selected class value
+      })
+      .then((response) => {
+        console.log('Data sent to server successfully:', response.data);
+
+        // Show Snackbar on successful submission
+        setIsSnackbarVisible(true);
+
+        // Reset the component state after a short delay (e.g., 2 seconds)
+        setTimeout(() => {
+          setIsSnackbarVisible(false);
+          resetState();
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error('Error sending data to server:', error);
+      });
+  };
+
+  // Function to reset the state
+  const resetState = () => {
+    setValue(null);
+    setStudentNames([]);
+    setSwitchStates({});
+    setIsAttendanceUpdated(false);
+    setIsClassSelected(false);
+    setSelectedAbsentees([]);
+  };
+
+  // Render the card with the selected absentees
+  const renderAbsenteesCard = () => {
+    return (
+      <Card style={styles.card}>
+        <Card.Title title="Selected Absentees" />
+        <Card.Content>
+          {selectedAbsentees.map((name, index) => (
+            <Text key={index}>{name}</Text>
+          ))}
+        </Card.Content>
+        <Card.Actions>
+          <TouchableOpacity onPress={handleBackClick}>
+            <Text style={styles.backButton}>Back</Text>
+          </TouchableOpacity>
+          <Button mode="contained" color="#0000FF" onPress={handleSubmitClick}>
+            Submit Attendance
+          </Button>
+        </Card.Actions>
+      </Card>
+    );
+  };
+
+  // Function to render each item in the dropdown
+  const renderItem = (item) => {
+    return (
+      <View style={styles.item}>
+        <Text style={styles.textItem}>{item.label}</Text>
+      </View>
+    );
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <Button
-        title={selectedClass ? selectedClass : 'Select Class'}
-        onPress={() => setModalVisible(true)}
-        containerStyle={{ marginVertical: 10 }}
-      />
+    <>
+      <ScrollView>
+        <View style={styles.container}>
+          <Dropdown
+            style={styles.dropdown}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            iconStyle={styles.iconStyle}
+            data={data}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder="Select Class"
+            searchPlaceholder="Search..."
+            value={value}
+            onChange={(item) => {
+              setValue(item.value);
+            }}
+            renderItem={renderItem}
+          />
 
-      <Button
-        title="Submit"
-        onPress={handleSubmission}
-        disabled={!selectedClass}
-        buttonStyle={{ backgroundColor: '#007AFF' }}
-        containerStyle={{ marginBottom: 10 }}
-      />
+          {isClassSelected ? (
+            // Display the card with selected absentees if attendance is updated
+            isAttendanceUpdated ? (
+              renderAbsenteesCard()
+            ) : (
+              // Otherwise display the table with switches
+              <View style={styles.container}>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}> Student Name</Text>
+                  <Text style={styles.tableHeader}> Attendance</Text>
+                </View>
 
-      <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <FlatList
-          data={classdata}
-          renderItem={renderDropdownItem}
-          keyExtractor={(item) => item.CLASS_NUMBER}
-        />
-      </Modal>
+                {studentNames.map((name, index) => (
+                  <View style={styles.tableRow} key={index}>
+                    <Text style={styles.tableCell}>{name}</Text>
+                    <Text style={styles.tableCell}>
+                      <Switch
+                        trackColor={{ false: '#767577', true: '#81b0ff' }}
+                        thumbColor={switchStates[name] ? '#f5dd4b' : '#f4f3f4'}
+                        ios_backgroundColor="#3e3e3e"
+                        onValueChange={() => toggleSwitch(name)}
+                        value={switchStates[name]}
+                      />
+                    </Text>
+                  </View>
+                ))}
 
-      {selectedStudent && (
-        <Card containerStyle={{ marginVertical: 10 }}>
-          <Card.Title>Selected Class: {selectedClass}</Card.Title>
-          <Card.Divider />
-          <Text>ADMISSION_NUMBER: {selectedStudent.ADMISSION_NUMBER}</Text>
-          <Text>Student_Name: {selectedStudent.Student_Name}</Text>
-          <TouchableOpacity
-            onPress={() =>
-              handleTogglePress(
-                selectedStudent.CLASS_NUMBER,
-                selectedStudent.ADMISSION_NUMBER,
-                selectedStudent.Student_Name
-              )
-            }
-            onLongPress={() =>
-              handleToggleLongPress(selectedStudent.CLASS_NUMBER, selectedStudent.ADMISSION_NUMBER)
-            }
-          >
-            <Text>Toggle</Text>
-          </TouchableOpacity>
-        </Card>
-      )}
-
-      <FlatList
-        data={statusData}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <Card containerStyle={{ marginVertical: 5 }}>
-            <Card.Title>{item.ADMISSION_NUMBER}</Card.Title>
-            <Card.Divider />
-            <Text>{item.Student_Name}</Text>
-            <TouchableOpacity
-              onPress={() =>
-                handleTogglePress(item.CLASS_NUMBER, item.ADMISSION_NUMBER, item.Student_Name)
-              }
-              onLongPress={() => handleToggleLongPress(item.CLASS_NUMBER, item.ADMISSION_NUMBER)}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Switch
-                  trackColor={{ false: '#767577', true: '#81b0ff' }}
-                  thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-                  ios_backgroundColor="#3e3e3e"
-                  onValueChange={toggleSwitch}
-                  value={item.present}
-                />
-                <Text>{item.present ? 'Present' : 'Absent'}</Text>
+                <Button mode="contained" color="#0000FF" onPress={handleButtonClick}>
+                   attendance
+                </Button>
               </View>
-            </TouchableOpacity>
-          </Card>
-        )}
-      />
+            )
+          ) : (
+            <Button mode="contained" color="#FF0000" onPress={selectClass}>
+              Submit
+            </Button>
+          )}
 
-      {absentStudents.length > 0 && (
-        <View style={{ marginTop: 20 }}>
-          <Text>Absent Students:</Text>
-          {absentStudents.map((student) => (
-            <Text key={student.ADMISSION_NUMBER}>{student.Student_Name}</Text>
-          ))}
+          <Snackbar visible={isSnackbarVisible} onDismiss={() => setIsSnackbarVisible(false)}>
+            Attendance updated successfully!
+          </Snackbar>
         </View>
-      )}
-    </View>
+      </ScrollView>
+    </>
   );
 };
 
-export default YourComponent;
+export default DropdownComponent;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  dropdown: {
+    margin: 16,
+    height: 50,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+
+    elevation: 2,
+  },
+  item: {
+    padding: 17,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  textItem: {
+    flex: 1,
+    fontSize: 16,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCCCCC',
+    paddingVertical: 10,
+  },
+  tableHeader: {
+    flex: 1,
+    fontWeight: 'bold',
+  },
+  tableCell: {
+    flex: 1,
+  },
+  card: {
+    margin: 16,
+    padding: 12,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  backButton: {
+    marginRight: 10,
+    color: 'blue',
+  },
+});

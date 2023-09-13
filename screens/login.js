@@ -108,7 +108,7 @@ export default function App() {
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Image source={require('./images/final1logo.png')} style={styles.logo} />
+        <Image source={require('../images/final1logo.png')} style={styles.logo} />
         <View style={styles.formContainer}>
           <Text style={styles.title}>KLEIT Student Center</Text>
           {!isEmailEntered && (

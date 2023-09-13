@@ -8,10 +8,12 @@ import RNFS from 'react-native-fs';
 import axios from 'axios';
 
 const classdata = [
-  { label: 'Class 1', classname: 'Class 1' },
-  { label: 'Class 2', classname: 'Class 2' },
-  { label: 'Class 3', classname: 'Class 3' },
-  { label: 'Class 4', classname: 'Class 4' },
+  { label: 'Class 5', classname: 'Class 5' },
+  { label: 'Class 6', classname: 'Class 6' },
+  { label: 'Class 7', classname: 'Class 7' },
+  { label: 'Class 8', classname: 'Class 8' },
+  { label: 'Class 10', classname: 'Class 9' },
+  { label: 'Class 10', classname: 'Class 10' },
 ];
 
 const YourComponent = () => {
@@ -30,7 +32,6 @@ const YourComponent = () => {
       const workbook = XLSX.read(fileContent, { type: 'base64' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      // console.log(data)
       
       const jsonData = JSON.stringify(data.map(item => ({
         CLASS_NUMBER: classname,
@@ -39,30 +40,27 @@ const YourComponent = () => {
         Father_Name: item[2],
         Mother_name: item[3],
         Date_of_Birth: item[4],
-        Mobile_No: item[5]
+        Mobile_No: item[5],
+        Email_id: item[6]
       })));
 
       const parsedData = JSON.parse(jsonData);
       const totalAdmissionNumbers = parsedData.length;
       
-      console.log(totalAdmissionNumbers-1);
+      console.log(totalAdmissionNumbers - 1);
 
-      axios.post('http://172.20.10.9:8001/teacher/classdata/post', jsonData, {
-    headers: {
-        'Content-Type': 'application/json'
-    }
-})
-.then(response => {
-    console.log('Data sent to MongoDB successfully');
-})
-.catch(error => {
-    console.error('Error sending data to MongoDB:', error);
-});
-      
-      console.log(jsonData);
-    
-      
-      
+      axios.post('http://172.20.10.9:8001/teacher/attendanceupdate/read', parsedData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        console.log('Data sent to MongoDB successfully');
+      })
+      .catch(error => {
+        console.error('Error sending data to MongoDB:', error);
+      });
+
       setJsonData(data);
     } catch (err) {
       console.log(err);
@@ -164,4 +162,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default YourComponent;
+export default YourComponent;

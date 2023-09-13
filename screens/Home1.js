@@ -120,7 +120,7 @@ const Home = ({ title, author, date, image }) => {
   return (
     <SafeAreaView>
       <ScrollView>
-        <Text style={styles.titleText}>Hello, $TeacherUsername</Text>
+        <Text style={styles.titleText}>Hello, Panchakshari Hiremath</Text>
 
         <View style={styles.card}>
           <View style={styles.content}>
